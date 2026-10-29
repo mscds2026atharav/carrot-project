@@ -23,6 +23,45 @@ CREATE DATABASE IF NOT EXISTS `Billing`;
 USE `Billing`;
 
 --
+-- Table structure for table `members`
+--
+
+DROP TABLE IF EXISTS `members`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `members` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `member_code` varchar(50) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `tier` enum('Bronze','Silver','Gold','Platinum') NOT NULL DEFAULT 'Bronze',
+  `reward_points` int(11) NOT NULL DEFAULT 0,
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `member_code` (`member_code`),
+  UNIQUE KEY `phone` (`phone`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `members`
+--
+
+SET @OLD_AUTOCOMMIT=@@AUTOCOMMIT, @@AUTOCOMMIT=0;
+LOCK TABLES `members` WRITE;
+/*!40000 ALTER TABLE `members` DISABLE KEYS */;
+INSERT INTO `members` (`member_code`, `name`, `phone`, `email`, `tier`, `reward_points`, `status`) VALUES
+('MEM1001', 'John Doe', '9876543210', 'john@example.com', 'Silver', 150, 'active'),
+('MEM1002', 'Jane Smith', '9876543211', 'jane@example.com', 'Gold', 320, 'active');
+/*!40000 ALTER TABLE `members` ENABLE KEYS */;
+UNLOCK TABLES;
+COMMIT;
+SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
+
+--
 -- Table structure for table `products`
 --
 
@@ -166,12 +205,18 @@ CREATE TABLE `sales_invoices` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `invoice_no` varchar(50) NOT NULL,
   `invoice_date` datetime NOT NULL DEFAULT current_timestamp(),
+  `member_id` int(11) DEFAULT NULL,
+  `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discount_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `total_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `points_earned` int(11) NOT NULL DEFAULT 0,
   `created_by` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `invoice_no` (`invoice_no`),
   KEY `created_by` (`created_by`),
-  FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
+  KEY `member_id` (`member_id`),
+  FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
+  FOREIGN KEY (`member_id`) REFERENCES `members` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -228,5 +273,3 @@ SET AUTOCOMMIT=@OLD_AUTOCOMMIT;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*M!100616 SET NOTE_VERBOSITY=@OLD_NOTE_VERBOSITY */;
-
--- Dump completed on 2026-10-26 14:38:23
